@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+csv
+pandas
+aiohttp
+aiocsv
+aiofiles
