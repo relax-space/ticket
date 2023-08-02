@@ -1,7 +1,6 @@
 from relax.local_cover import make_cover_list
 from relax.down_prod import req_all_prod
 from relax.local_import import make_import_list
-from relax.local_product import write_all
 from relax.util import get_header, get_settings
 import os
 import sys
@@ -56,6 +55,7 @@ async def step_3(headers: dict, settings: dict, lst: list):
         settings['folder_name'], f'{settings["header_file_name"]}.csv'
     )
     await req_all_header(url, headers, lst, file_name)
+    print(f'下载{settings["header_file_name"]}.csv完成')
 
 
 # download products
@@ -66,6 +66,7 @@ async def step_4(headers: dict, settings: dict, lst: list):
         settings['folder_name'], f'{settings["prod_folder_name"]}'
     )
     await req_all_prod(url, headers, lst, folder_name)
+    print(f'下载{settings["header_file_name"]}.csv完成')
 
 
 # merge
@@ -104,14 +105,6 @@ def step_7(settings: dict):
     return make_import_list(base_file_name, prod_folder_name, import_folder_name)
 
 
-def step_8(settings: dict):
-    prod_folder = os.path.join(settings['folder_name'], settings['prod_folder_name'])
-    prod_xlsx_folder = os.path.join(
-        settings['folder_name'], settings['prod_xlsx_folder_name']
-    )
-    write_all(prod_folder, prod_xlsx_folder)
-
-
 def get_csv_list(settings: dict):
     file_name = os.path.join(
         settings['folder_name'], f'{settings["list_file_name"]}.csv'
@@ -143,45 +136,17 @@ async def main_async(headers: dict):
     )
     if not os.path.isdir(import_folder):
         os.makedirs(import_folder)
-    prod_xlsx_folder = os.path.join(
-        settings['folder_name'], settings['prod_xlsx_folder_name']
-    )
-    if not os.path.isdir(prod_xlsx_folder):
-        os.makedirs(prod_xlsx_folder)
 
-    is_success = step_1(headers)
-    if not is_success:
-        print('valid fail')
-        return
-    print('1.验证完成')
+    # step_5(settings)
+    # print(f'5.合并完成：{settings["prod_folder_name"]}')
 
-    step_2(headers, settings)
-    print(f'2.下载完成：{settings["list_file_name"]}.csv')
-
-    lst = None
-    lst = get_csv_list(settings)
-    # lst = ['202306030001411469']
-    await step_3(headers, settings, lst)
-    print(f'3.下载完成：{settings["header_file_name"]}.csv')
-
-    lst = get_csv_two_list(settings)
-    # lst = [['51016', '202306030001411469']]
-    await step_4(headers, settings, lst)
-    print(f'4.下载完成：{settings["prod_folder_name"]}')
-
-    step_5(settings)
-    print(f'5.合并完成：{settings["prod_folder_name"]}')
-
-    step_6(settings)
-    print(f'6.制作封面完成：{settings["cover_folder_name"]}')
+    # step_6(settings)
+    # print(f'6.制作封面完成：{settings["cover_folder_name"]}')
 
     set1 = step_7(settings)
     if len(set1) > 0:
         print(f'税率没有发现{set1}')
     print(f'7.导入列表完成：{settings["import_folder_name"]}')
-
-    step_8(settings)
-    print(f'8.商品/*.xlsx完成：{settings["prod_xlsx_folder_name"]}')
 
     print('全部任务已完成')
 

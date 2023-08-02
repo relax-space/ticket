@@ -3,7 +3,10 @@
 '''
 import os
 import re
+from openpyxl import Workbook
 import pandas as pd
+
+from relax.util import get_settings
 
 
 def get_numb(raw: str):
@@ -38,7 +41,7 @@ def write_cover(
     cover_content_2: str,
 ):
     writer = pd.ExcelWriter(cover_file_name, engine='xlsxwriter')
-    workbook1 = writer.book
+    workbook1: Workbook = writer.book
     worksheet1 = workbook1.add_worksheet('Sheet1')
 
     worksheet1.set_column('A:A', 23)
@@ -154,18 +157,7 @@ def make_cover_list(
 
 
 if __name__ == '__main__':
-    settings = {
-        'folder_name': 'data',
-        'list_file_name': 'list',
-        'list_file_start': '2023-06-03',
-        'list_file_end': '2023-06-03',
-        'header_file_name': 'header',
-        'prod_folder_name': 'product',
-        'list_header_name': 'list_header',
-        'cover_folder_name': 'cover',
-        'cover_content_1': '2023年5月驻琼部队副食品区域集中筹措物资【封面】',
-        'cover_content_2': '供应商：海南食安万商电子商务有限公司                                  每日汇总表',
-    }
+    settings = get_settings()
 
     product_folder = os.path.join(settings['folder_name'], settings['prod_folder_name'])
     cover_folder = os.path.join(settings['folder_name'], settings['cover_folder_name'])
