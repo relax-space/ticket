@@ -43,6 +43,7 @@ def write_cover(
     writer = pd.ExcelWriter(cover_file_name, engine='xlsxwriter')
     workbook1: Workbook = writer.book
     worksheet1 = workbook1.add_worksheet('Sheet1')
+    worksheet1.center_horizontally()
 
     worksheet1.set_column('A:A', 23)
     worksheet1.set_column('B:B', 21)

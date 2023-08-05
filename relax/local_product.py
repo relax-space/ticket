@@ -9,6 +9,7 @@ def write_one(prod_folder, prod_xlsx_folder, xlsx_name):
     )
     workbook1 = writer.book
     worksheet1 = workbook1.add_worksheet('Sheet1')
+    worksheet1.center_horizontally()
 
     fmt_row1 = workbook1.add_format(
         {

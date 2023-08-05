@@ -41,7 +41,7 @@ def step_2(headers: dict, settings: dict):
     if not count:
         print('获取分页数量失败')
         return
-    print('获取分页数量成功')
+    print(f'获取分页数量成功:{count}')
     file_name = os.path.join(
         settings['folder_name'], f'{settings["list_file_name"]}.csv'
     )
