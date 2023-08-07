@@ -4,3 +4,5 @@ pandas
 aiohttp
 aiocsv
 aiofiles
+pyppeteer
+selenium

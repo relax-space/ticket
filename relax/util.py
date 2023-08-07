@@ -21,7 +21,7 @@ def get_settings():
         'list_header_name': 'list_header',
         'cover_folder_name': 'cover',
         'cover_content_1': '2023年7月驻琼部队副食品区域集中筹措物资【封面】',
-        'cover_content_2': '供应商：海南食安万商电子商务有限公司                                  每日汇总表',
+        'cover_content_2': '供应商：海南食安万商电子商务有限公司                       每日汇总表',
         'base_file_name': 'base',
         'import_folder_name': 'import_list',
     }
