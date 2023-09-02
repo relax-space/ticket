@@ -24,5 +24,8 @@ def get_settings():
         'cover_content_2': '供应商：海南食安万商电子商务有限公司                       每日汇总表',
         'base_file_name': 'base',
         'import_folder_name': 'import_list',
+        'print_folder_name': 'print',
+        'print_folder_A4': 'A4',
+        'print_folder_A5': 'A5',
     }
     return settings

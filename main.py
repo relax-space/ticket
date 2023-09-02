@@ -2,6 +2,7 @@ from relax.local_cover import make_cover_list
 from relax.down_prod import req_all_prod
 from relax.local_import import make_import_list
 from relax.local_product import write_all
+from relax.print_product import make_print_file
 from relax.util import get_header, get_settings
 import os
 import sys
@@ -112,6 +113,37 @@ def step_8(settings: dict):
     write_all(prod_folder, prod_xlsx_folder)
 
 
+def step_9(settings: dict):
+    prod_xlsx_folder = os.path.join(
+        settings['folder_name'], settings['prod_xlsx_folder_name']
+    )
+    if not os.path.isdir(prod_xlsx_folder):
+        raise Exception('请先下载产品')
+    cover_folder = os.path.join(settings['folder_name'], settings['cover_folder_name'])
+    if not os.path.isdir(cover_folder):
+        raise Exception('请先下载封面')
+
+    print_folder = os.path.join(
+        settings['folder_name'],
+        settings['print_folder_name'],
+    )
+    print_folder_A4 = os.path.join(
+        print_folder,
+        settings['print_folder_A4'],
+    )
+    if not os.path.isdir(print_folder_A4):
+        os.makedirs(print_folder_A4)
+
+    print_folder_A5 = os.path.join(
+        print_folder,
+        settings['print_folder_A5'],
+    )
+    if not os.path.isdir(print_folder_A5):
+        os.makedirs(print_folder_A5)
+
+    make_print_file(cover_folder, prod_xlsx_folder, print_folder)
+
+
 def get_csv_list(settings: dict):
     file_name = os.path.join(
         settings['folder_name'], f'{settings["list_file_name"]}.csv'
@@ -149,6 +181,24 @@ async def main_async(headers: dict):
     if not os.path.isdir(prod_xlsx_folder):
         os.makedirs(prod_xlsx_folder)
 
+    print_folder = os.path.join(
+        settings['folder_name'],
+        settings['print_folder_name'],
+    )
+    print_folder_A4 = os.path.join(
+        print_folder,
+        settings['print_folder_A4'],
+    )
+    if not os.path.isdir(print_folder_A4):
+        os.makedirs(print_folder_A4)
+
+    print_folder_A5 = os.path.join(
+        print_folder,
+        settings['print_folder_A5'],
+    )
+    if not os.path.isdir(print_folder_A5):
+        os.makedirs(print_folder_A5)
+
     is_success = step_1(headers)
     if not is_success:
         print('valid fail')
@@ -182,6 +232,9 @@ async def main_async(headers: dict):
 
     step_8(settings)
     print(f'8.商品/*.xlsx完成：{settings["prod_xlsx_folder_name"]}')
+
+    step_9(settings)
+    print(f'9.打印列表A4A5完成：{print_folder}')
 
     print('全部任务已完成')
 
