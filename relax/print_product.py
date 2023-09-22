@@ -6,8 +6,8 @@
 
 import os
 import sys
-import pandas as pd
 import shutil
+from relax.common import get_page_size_list
 
 
 def make_print_file(
@@ -15,24 +15,12 @@ def make_print_file(
     prod_xlsx_folder,
     print_folder,
 ):
-    df = pd.read_excel(
-        os.path.join('base_data', 'size.xlsx'),
-        usecols=['客户id', '筹措清单打印大小', '筹措清单份数', '备注'],
-        dtype={'备注': str},
-    )
+    size_date = get_page_size_list()
 
-    df[['备注']] = df[['备注']].astype(str)
-
-    for _, v in df.iterrows():
-        zd = v['客户id']
-        page_size = v['筹措清单打印大小']
-        page_quantity = v['筹措清单份数']
-        remark: str = v['备注'].strip()
-        if not (remark == 'nan' or remark == ''):
-            continue
-        if not (page_size == 'A4' or page_size == 'A5'):
-            print(f'尺寸有误:{zd}')
-            continue
+    for v in size_date:
+        zd = v['zd']
+        page_size = v['page_size']
+        page_quantity = v['page_quantity']
         cover = os.path.join(cover_folder, f'{zd}.xlsx')
         if os.path.isfile(cover):
             for i in range(page_quantity):

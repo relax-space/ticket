@@ -6,3 +6,4 @@ aiocsv
 aiofiles
 pyppeteer
 selenium
+xlsxwriter

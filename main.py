@@ -90,7 +90,10 @@ def step_6(settings: dict):
     cover_folder = os.path.join(settings['folder_name'], settings['cover_folder_name'])
     cover_content_1 = settings['cover_content_1']
     cover_content_2 = settings['cover_content_2']
-    make_cover_list(product_folder, cover_folder, cover_content_1, cover_content_2)
+    product_img_name = settings['product_img_name']
+    make_cover_list(
+        product_folder, cover_folder, cover_content_1, cover_content_2, product_img_name
+    )
 
 
 # make import list
@@ -110,7 +113,8 @@ def step_8(settings: dict):
     prod_xlsx_folder = os.path.join(
         settings['folder_name'], settings['prod_xlsx_folder_name']
     )
-    write_all(prod_folder, prod_xlsx_folder)
+    product_img_name = settings['product_img_name']
+    write_all(prod_folder, prod_xlsx_folder, product_img_name)
 
 
 def step_9(settings: dict):
@@ -199,36 +203,36 @@ async def main_async(headers: dict):
     if not os.path.isdir(print_folder_A5):
         os.makedirs(print_folder_A5)
 
-    is_success = step_1(headers)
-    if not is_success:
-        print('valid fail')
-        return
-    print('1.验证完成')
+    # is_success = step_1(headers)
+    # if not is_success:
+    #     print('valid fail')
+    #     return
+    # print('1.验证完成')
 
-    step_2(headers, settings)
-    print(f'2.下载完成：{settings["list_file_name"]}.csv')
+    # step_2(headers, settings)
+    # print(f'2.下载完成：{settings["list_file_name"]}.csv')
 
-    lst = None
-    lst = get_csv_list(settings)
-    # lst = ['202306030001411469']
-    await step_3(headers, settings, lst)
-    print(f'3.下载完成：{settings["header_file_name"]}.csv')
+    # lst = None
+    # lst = get_csv_list(settings)
+    # # lst = ['202306030001411469']
+    # await step_3(headers, settings, lst)
+    # print(f'3.下载完成：{settings["header_file_name"]}.csv')
 
-    lst = get_csv_two_list(settings)
-    # lst = [['51016', '202306030001411469']]
-    await step_4(headers, settings, lst)
-    print(f'4.下载完成：{settings["prod_folder_name"]}')
+    # lst = get_csv_two_list(settings)
+    # # lst = [['51016', '202306030001411469']]
+    # await step_4(headers, settings, lst)
+    # print(f'4.下载完成：{settings["prod_folder_name"]}')
 
-    step_5(settings)
-    print(f'5.合并完成：{settings["prod_folder_name"]}')
+    # step_5(settings)
+    # print(f'5.合并完成：{settings["prod_folder_name"]}')
 
     step_6(settings)
     print(f'6.制作封面完成：{settings["cover_folder_name"]}')
 
-    set1 = step_7(settings)
-    if len(set1) > 0:
-        print(f'税率没有发现{set1}')
-    print(f'7.导入列表完成：{settings["import_folder_name"]}')
+    # set1 = step_7(settings)
+    # if len(set1) > 0:
+    #     print(f'税率没有发现{set1}')
+    # print(f'7.导入列表完成：{settings["import_folder_name"]}')
 
     step_8(settings)
     print(f'8.商品/*.xlsx完成：{settings["prod_xlsx_folder_name"]}')
