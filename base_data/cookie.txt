@@ -1,0 +1,1 @@
+IS_LOGIN_B2B=isloginFlag_b2b; B2BMALLID=820d8188-491c-4dff-a6da-4083271cdfad; IS_LOGIN=isLoginFlag; B2BSESSION=e5c46ddb-ada9-45fa-bee9-0b1b3f898821
