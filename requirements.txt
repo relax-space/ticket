@@ -6,3 +6,5 @@ aiocsv
 aiofiles
 xlsxwriter
 openpyxl
+wmi
+tkcalendar

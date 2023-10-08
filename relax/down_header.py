@@ -3,7 +3,6 @@
 """
 
 from asyncio import Semaphore, gather, get_event_loop
-import ssl
 from aiohttp import ClientSession, TCPConnector
 from bs4 import BeautifulSoup
 
