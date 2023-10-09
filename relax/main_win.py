@@ -1,6 +1,7 @@
-import asyncio
+from asyncio import get_event_loop
 from datetime import date
-import os
+from os import path as os_path, chdir
+from sys import path as sys_path
 from tkinter import (
     END,
     BooleanVar,
@@ -31,11 +32,28 @@ try:
         get_cover_1_bydate,
         get_cover_2,
         fill_zero_2,
+        get_header,
+        get_settings,
     )
     from relax.main_ import main_async
     from relax.count_ import valid_count, init_count
     from relax.secret_win import SecretWin
 except:
+    from util import (
+        check_file_date,
+        get_current_date,
+        get_companys,
+        get_cover_1,
+        get_cover_1_bydate,
+        get_cover_2,
+        fill_zero_2,
+        get_header,
+        get_settings,
+    )
+    from main_ import main_async
+    from count_ import valid_count, init_count
+    from secret_win import SecretWin
+finally:
     pass
 
 
@@ -119,9 +137,18 @@ def load_view():
 
 async def save_click():
     headers = get_header()
-    current_company = companys[_company_var.get()]
+    headers.update({"Cookie": _cookie_var.get()})
     settings = get_settings()
     sdate = _date_var.get()
+    current_company = {
+        "company": {"name": _company_var.get(), "output_path": _output_var.get()},
+        "stamp": {
+            "path": _stamp_path_var.get(),
+            "page_height": 750,
+            "enable": _is_img_var.get(),
+        },
+    }
+
     is_download = _is_download_var.get()
     is_valid = valid_count()
     if is_download and (not is_valid):
@@ -136,20 +163,21 @@ async def save_click():
 
 
 def on_button_click():
-    if _count_event > 1:
+    count = _count_event.get()
+    if not count:
         return
 
-    _count_event += 1
+    _count_event.set(False)
     # 创建一个事件循环并运行异步函数
-    loop = asyncio.get_event_loop()
+    loop = get_event_loop()
     loop.run_until_complete(save_click())
     # loop.close()
 
 
 def top_frame(headers, settings, companys):
     global _count_event
+    _count_event = BooleanVar(value=True)
     global _company_var, _is_download_var, _date_var, _cookie_var, _cover_var_1, _cover_var_2, _output_var, _is_img_var, _stamp_path_var, _page_weight_var
-    _count_event = 1
     _company_var = StringVar()
     _is_download_var = BooleanVar()
     _date_var = StringVar()
@@ -249,7 +277,7 @@ def top_frame(headers, settings, companys):
     btn_save = Button(
         fr1,
         text="生成",
-        command=lambda: asyncio.get_event_loop().run_until_complete(save_click()),
+        command=on_button_click,
         width=20,
     )
 
@@ -366,7 +394,7 @@ def init_view(headers, settings, companys):
 
 def init_active(code):
     file_name = "base_data/pwd"
-    if not os.path.exists(file_name):
+    if not os_path.exists(file_name):
         return None, False, None
 
     with open(file_name, mode="r", encoding="utf8") as f:
@@ -413,9 +441,7 @@ def check_date():
 def init(headers, settings, companys):
     global _setting_data
     _setting_data = settings
-    res = check_date()
-    if not res:
-        return
+    check_date()
     init_key()
     init_view(headers, settings, companys)
     init_count()
@@ -423,25 +449,9 @@ def init(headers, settings, companys):
 
 
 if __name__ == "__main__":
-    import sys
-
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, p)
-    os.chdir(p)
-    from relax.util import (
-        check_file_date,
-        get_current_date,
-        get_companys,
-        get_cover_1,
-        get_cover_1_bydate,
-        get_cover_2,
-        fill_zero_2,
-        get_header,
-        get_settings,
-    )
-    from relax.count_ import valid_count, init_count
-    from relax.secret_win import SecretWin
-    from relax.main_ import main_async
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
+    sys_path.insert(0, p)
+    chdir(p)
 
     headers = get_header()
     settings = get_settings()

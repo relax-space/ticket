@@ -7,10 +7,13 @@ from aiohttp import ClientSession, TCPConnector
 from bs4 import BeautifulSoup
 
 from aiocsv import AsyncWriter
-import aiofiles
-import os
+from aiofiles import open
+from os import path as os_path
 
-from relax.util import get_header, get_settings
+try:
+    from relax.util import get_header, get_settings
+except:
+    from util import get_header, get_settings
 
 
 async def req(
@@ -26,10 +29,8 @@ async def req(
         url = url.format(i_param)
         async with sem:
             async with session.get(url, headers=headers) as resp:
-                file_name = os.path.join(folder_name, f"{z}.csv")
-                async with aiofiles.open(
-                    file_name, "w", encoding="utf-8-sig", newline=""
-                ) as f:
+                file_name = os_path.join(folder_name, f"{z}.csv")
+                async with open(file_name, "w", encoding="utf-8-sig", newline="") as f:
                     txt = await resp.read()
                     data = BeautifulSoup(txt, "html.parser")
                     div1 = data.find("div", attrs={"id": "print"})
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     headers["Referer"] = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     url = "https://sp.trade.icbc.com.cn/submit/seller/toProdDetail.jhtml?submitSeq={}"
     settings = get_settings()
-    folder_name = os.path.join(
+    folder_name = os_path.join(
         settings["folder_name"], f'{settings["prod_folder_name"]}'
     )
 

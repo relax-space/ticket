@@ -1,9 +1,8 @@
-import os
-import sys
-import asyncio
-import pandas as pd
+from os import path as os_path, makedirs, chdir
+from sys import path as sys_path
+from asyncio import get_event_loop
+from pandas import read_csv
 
-from relax.count_ import add_count
 
 try:
     from relax.common import get_page_size_list, get_ticket_size_list
@@ -26,8 +25,27 @@ try:
 
     from relax.down_header import req_all_header
     from relax.local_header import merge
+    from relax.count_ import add_count
 except:
-    pass
+    from common import get_page_size_list, get_ticket_size_list
+    from local_cover import make_cover_list
+    from down_prod import req_all_prod
+    from local_import import make_import_list
+    from local_product import write_all
+    from print_product import make_print_file
+    from util import (
+        get_companys,
+        get_cover_1,
+        get_cover_2,
+        get_header,
+        get_settings,
+        get_year_month,
+    )
+    from cookie_check import check
+    from down_list import get_page_count, download_list_data
+    from down_header import req_all_header
+    from local_header import merge
+    from count_ import add_count
 
 
 # check cookie
@@ -39,7 +57,7 @@ def step_1(headers: dict):
 
 
 # download list
-def step_2(headers: dict, search_date: str, output_path):
+def step_2(headers: dict, settings: dict, search_date: str, output_path):
     headers["Referer"] = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     url = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     params = {
@@ -58,7 +76,7 @@ def step_2(headers: dict, search_date: str, output_path):
         print("获取分页数量失败")
         return
     print(f"获取分页数量成功:{count}")
-    file_name = os.path.join(output_path, f'{settings["list_file_name"]}.csv')
+    file_name = os_path.join(output_path, f'{settings["list_file_name"]}.csv')
     download_list_data(url, params, headers, count, file_name)
 
 
@@ -66,7 +84,7 @@ def step_2(headers: dict, search_date: str, output_path):
 async def step_3(headers: dict, settings: dict, lst: list, output_path):
     headers["Referer"] = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     url = "https://sp.trade.icbc.com.cn/submit/seller/toDetail.jhtml?submitSeq={}&submit.year=0&flag=print"
-    file_name = os.path.join(output_path, f'{settings["header_file_name"]}.csv')
+    file_name = os_path.join(output_path, f'{settings["header_file_name"]}.csv')
     await req_all_header(url, headers, lst, file_name)
 
 
@@ -74,23 +92,23 @@ async def step_3(headers: dict, settings: dict, lst: list, output_path):
 async def step_4(headers: dict, settings: dict, lst: list, output_path):
     headers["Referer"] = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     url = "https://sp.trade.icbc.com.cn/submit/seller/toProdDetail.jhtml?submitSeq={}"
-    folder_name = os.path.join(output_path, f'{settings["prod_folder_name"]}')
+    folder_name = os_path.join(output_path, f'{settings["prod_folder_name"]}')
     await req_all_prod(url, headers, lst, folder_name)
 
 
 # merge
 def step_5(settings: dict, output_path):
-    list_file_name = os.path.join(output_path, f'{settings["list_file_name"]}.csv')
-    header_file_name = os.path.join(output_path, f'{settings["header_file_name"]}.csv')
-    list_header_name = os.path.join(output_path, f'{settings["list_header_name"]}.xlsx')
+    list_file_name = os_path.join(output_path, f'{settings["list_file_name"]}.csv')
+    header_file_name = os_path.join(output_path, f'{settings["header_file_name"]}.csv')
+    list_header_name = os_path.join(output_path, f'{settings["list_header_name"]}.xlsx')
     merge(list_file_name, header_file_name, list_header_name)
     pass
 
 
 # make cover
 def step_6(settings: dict, company: dict, search_date, output_path):
-    product_folder = os.path.join(output_path, settings["prod_folder_name"])
-    cover_folder = os.path.join(output_path, settings["cover_folder_name"])
+    product_folder = os_path.join(output_path, settings["prod_folder_name"])
+    cover_folder = os_path.join(output_path, settings["cover_folder_name"])
     year, month = get_year_month(search_date)
     cover_content_1 = get_cover_1(year, month)
     cover_content_2 = get_cover_2(company["company"]["name"])
@@ -100,124 +118,124 @@ def step_6(settings: dict, company: dict, search_date, output_path):
 
 
 def step_7(settings: dict, company: dict, output_path):
-    prod_folder = os.path.join(output_path, settings["prod_folder_name"])
-    prod_xlsx_folder = os.path.join(output_path, settings["prod_xlsx_folder_name"])
+    prod_folder = os_path.join(output_path, settings["prod_folder_name"])
+    prod_xlsx_folder = os_path.join(output_path, settings["prod_xlsx_folder_name"])
     write_all(prod_folder, prod_xlsx_folder, company)
 
 
 # make import list
 def step_8(settings: dict, output_path):
     base_file_name = settings["base_file_name"]
-    prod_folder_name = os.path.join(output_path, settings["prod_folder_name"])
-    import_folder_name = os.path.join(output_path, settings["import_folder_name"])
+    prod_folder_name = os_path.join(output_path, settings["prod_folder_name"])
+    import_folder_name = os_path.join(output_path, settings["import_folder_name"])
     return make_import_list(base_file_name, prod_folder_name, import_folder_name)
 
 
 def step_9(settings: dict, output_path):
-    prod_xlsx_folder = os.path.join(output_path, settings["prod_xlsx_folder_name"])
-    if not os.path.isdir(prod_xlsx_folder):
+    prod_xlsx_folder = os_path.join(output_path, settings["prod_xlsx_folder_name"])
+    if not os_path.isdir(prod_xlsx_folder):
         raise Exception("请先下载产品")
-    cover_folder = os.path.join(output_path, settings["cover_folder_name"])
-    if not os.path.isdir(cover_folder):
+    cover_folder = os_path.join(output_path, settings["cover_folder_name"])
+    if not os_path.isdir(cover_folder):
         raise Exception("请先下载封面")
 
-    print_folder = os.path.join(
+    print_folder = os_path.join(
         output_path,
         settings["print_folder_name"],
     )
-    print_folder_A4 = os.path.join(
+    print_folder_A4 = os_path.join(
         print_folder,
         settings["print_folder_A4"],
     )
-    if not os.path.isdir(print_folder_A4):
-        os.makedirs(print_folder_A4)
+    if not os_path.isdir(print_folder_A4):
+        makedirs(print_folder_A4)
 
-    print_folder_A5 = os.path.join(
+    print_folder_A5 = os_path.join(
         print_folder,
         settings["print_folder_A5"],
     )
-    if not os.path.isdir(print_folder_A5):
-        os.makedirs(print_folder_A5)
+    if not os_path.isdir(print_folder_A5):
+        makedirs(print_folder_A5)
     size_list = get_page_size_list()
     make_print_file(size_list, cover_folder, print_folder, "i", "xlsx")
     make_print_file(size_list, prod_xlsx_folder, print_folder, "j", "xlsx")
 
 
 def step_10(settings: dict, output_path):
-    ticket_folder = os.path.join(output_path, settings["ticket_folder_name"])
-    if not os.path.isdir(ticket_folder):
+    ticket_folder = os_path.join(output_path, settings["ticket_folder_name"])
+    if not os_path.isdir(ticket_folder):
         raise Exception("请先下载发票")
 
-    print_folder = os.path.join(
+    print_folder = os_path.join(
         output_path,
         settings["print_folder_name"],
     )
-    print_folder_A4 = os.path.join(
+    print_folder_A4 = os_path.join(
         print_folder,
         settings["print_folder_A4"],
     )
-    if not os.path.isdir(print_folder_A4):
-        os.makedirs(print_folder_A4)
+    if not os_path.isdir(print_folder_A4):
+        makedirs(print_folder_A4)
 
-    print_folder_A5 = os.path.join(
+    print_folder_A5 = os_path.join(
         print_folder,
         settings["print_folder_A5"],
     )
-    if not os.path.isdir(print_folder_A5):
-        os.makedirs(print_folder_A5)
+    if not os_path.isdir(print_folder_A5):
+        makedirs(print_folder_A5)
     size_list = get_ticket_size_list()
     make_print_file(size_list, ticket_folder, print_folder, "h", "pdf")
 
 
 def get_csv_list(settings: dict, output_path):
-    file_name = os.path.join(output_path, f'{settings["list_file_name"]}.csv')
-    datas = pd.read_csv(file_name, usecols=["报账单号"])
+    file_name = os_path.join(output_path, f'{settings["list_file_name"]}.csv')
+    datas = read_csv(file_name, usecols=["报账单号"])
     lst = datas["报账单号"].values.tolist()
     return lst
 
 
 def get_csv_two_list(settings: dict, output_path):
-    file_name = os.path.join(output_path, f'{settings["list_file_name"]}.csv')
-    datas = pd.read_csv(file_name, usecols=["灶点编码", "报账单号"])
+    file_name = os_path.join(output_path, f'{settings["list_file_name"]}.csv')
+    datas = read_csv(file_name, usecols=["灶点编码", "报账单号"])
     lst = datas.values.tolist()
     return lst
 
 
 def init(settings, output_path) -> dict:
-    prod_folder = os.path.join(output_path, settings["prod_folder_name"])
-    if not os.path.isdir(prod_folder):
-        os.makedirs(prod_folder)
-    cover_folder = os.path.join(output_path, settings["cover_folder_name"])
-    if not os.path.isdir(cover_folder):
-        os.makedirs(cover_folder)
-    import_folder = os.path.join(output_path, settings["import_folder_name"])
-    if not os.path.isdir(import_folder):
-        os.makedirs(import_folder)
-    prod_xlsx_folder = os.path.join(output_path, settings["prod_xlsx_folder_name"])
-    if not os.path.isdir(prod_xlsx_folder):
-        os.makedirs(prod_xlsx_folder)
+    prod_folder = os_path.join(output_path, settings["prod_folder_name"])
+    if not os_path.isdir(prod_folder):
+        makedirs(prod_folder)
+    cover_folder = os_path.join(output_path, settings["cover_folder_name"])
+    if not os_path.isdir(cover_folder):
+        makedirs(cover_folder)
+    import_folder = os_path.join(output_path, settings["import_folder_name"])
+    if not os_path.isdir(import_folder):
+        makedirs(import_folder)
+    prod_xlsx_folder = os_path.join(output_path, settings["prod_xlsx_folder_name"])
+    if not os_path.isdir(prod_xlsx_folder):
+        makedirs(prod_xlsx_folder)
 
-    ticket_folder = os.path.join(output_path, settings["ticket_folder_name"])
-    if not os.path.isdir(ticket_folder):
-        os.makedirs(ticket_folder)
+    ticket_folder = os_path.join(output_path, settings["ticket_folder_name"])
+    if not os_path.isdir(ticket_folder):
+        makedirs(ticket_folder)
 
-    print_folder = os.path.join(
+    print_folder = os_path.join(
         output_path,
         settings["print_folder_name"],
     )
-    print_folder_A4 = os.path.join(
+    print_folder_A4 = os_path.join(
         print_folder,
         settings["print_folder_A4"],
     )
-    if not os.path.isdir(print_folder_A4):
-        os.makedirs(print_folder_A4)
+    if not os_path.isdir(print_folder_A4):
+        makedirs(print_folder_A4)
 
-    print_folder_A5 = os.path.join(
+    print_folder_A5 = os_path.join(
         print_folder,
         settings["print_folder_A5"],
     )
-    if not os.path.isdir(print_folder_A5):
-        os.makedirs(print_folder_A5)
+    if not os_path.isdir(print_folder_A5):
+        makedirs(print_folder_A5)
     return settings
 
 
@@ -227,30 +245,30 @@ async def main_async(
     output_path = company["company"]["output_path"]
     init(settings, output_path)
     if is_download:
-        # is_success = step_1(headers)
-        # if not is_success:
-        #     print("valid fail")
-        #     return "1.验证失败"
-        # print("1.验证完成")
+        is_success = step_1(headers)
+        if not is_success:
+            print("valid fail")
+            return "1.验证失败"
+        print("1.验证完成")
 
-        # step_2(headers, search_date, output_path)
-        # print(f'2.下载完成：{settings["list_file_name"]}.csv')
+        step_2(headers, settings, search_date, output_path)
+        print(f'2.下载完成：{settings["list_file_name"]}.csv')
 
-        # lst = None
-        # lst = get_csv_list(settings, output_path)
-        # # lst = ["202309030001518570"]
-        # await step_3(
-        #     headers,
-        #     settings,
-        #     lst,
-        #     output_path,
-        # )
-        # print(f'3.下载完成：{settings["header_file_name"]}.csv')
+        lst = None
+        lst = get_csv_list(settings, output_path)
+        lst = ["202310030001536998"]
+        await step_3(
+            headers,
+            settings,
+            lst,
+            output_path,
+        )
+        print(f'3.下载完成：{settings["header_file_name"]}.csv')
 
-        # lst = get_csv_two_list(settings, output_path)
-        # # lst = [["51016", "202309030001518570"]]
-        # await step_4(headers, settings, lst, output_path)
-        # print(f'4.下载完成：{settings["prod_folder_name"]}')
+        lst = get_csv_two_list(settings, output_path)
+        lst = [["51016", "202310030001536998"]]
+        await step_4(headers, settings, lst, output_path)
+        print(f'4.下载完成：{settings["prod_folder_name"]}')
         add_count()
 
     step_5(settings, output_path)
@@ -280,29 +298,9 @@ async def main_async(
 
 
 if __name__ == "__main__":
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, p)
-    os.chdir(p)
-    from relax.common import get_page_size_list, get_ticket_size_list
-    from relax.local_cover import make_cover_list
-    from relax.down_prod import req_all_prod
-    from relax.local_import import make_import_list
-    from relax.local_product import write_all
-    from relax.print_product import make_print_file
-    from relax.util import (
-        get_companys,
-        get_cover_1,
-        get_cover_2,
-        get_header,
-        get_settings,
-        get_year_month,
-    )
-
-    from relax.cookie_check import check
-    from relax.down_list import get_page_count, download_list_data
-
-    from relax.down_header import req_all_header
-    from relax.local_header import merge
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
+    sys_path.insert(0, p)
+    chdir(p)
 
     headers = get_header()
     settings = get_settings()
@@ -312,7 +310,7 @@ if __name__ == "__main__":
     cookie = "1111"
     headers.update({"Cookie": cookie})
 
-    asyncio.get_event_loop().run_until_complete(
+    get_event_loop().run_until_complete(
         main_async(headers, company, settings, search_date, True)
     )
     pass

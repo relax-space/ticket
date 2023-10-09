@@ -1,8 +1,11 @@
 from hashlib import md5
 from datetime import date, datetime
-import os
+from os import path
 
-from relax.util import check_file_date
+try:
+    from relax.util import check_file_date
+except:
+    from util import check_file_date
 
 
 def get_m():
@@ -17,7 +20,7 @@ def get_m():
 
 
 def valid_count():
-    if not os.path.exists("base_data/a"):
+    if not path.exists("base_data/a"):
         return False
     with open("base_data/a", mode="r", encoding="utf8") as f:
         raw = f.read()
@@ -66,4 +69,9 @@ def add_count():
     with open(file_name, mode="w", encoding="utf8") as f:
         f.write(new_value)
 
+    pass
+
+
+if __name__ == "__main__":
+    print(get_m())
     pass

@@ -1,9 +1,9 @@
-import json
-import os
+from json import load
+from os import path as os_path
 from datetime import date, datetime, timedelta
-import time
+from time import sleep, strptime, mktime
 
-import requests
+from requests import get
 
 
 def get_header():
@@ -15,15 +15,15 @@ def get_header():
 
 
 def get_settings():
-    with open(os.path.join("base_data", "base.json"), mode="r", encoding="utf8") as f:
-        return json.load(f)
+    with open(os_path.join("base_data", "base.json"), mode="r", encoding="utf8") as f:
+        return load(f)
 
 
 def get_companys():
     with open(
-        os.path.join("base_data", "company.json"), mode="r", encoding="utf8"
+        os_path.join("base_data", "company.json"), mode="r", encoding="utf8"
     ) as f:
-        return json.load(f)
+        return load(f)
 
 
 def str_to_int(strObj: str) -> int:
@@ -40,21 +40,21 @@ def fill_zero_2(i) -> str:
 def get_current_date(retry=3) -> date:
     while retry > 0:
         try:
-            resp = requests.get("https://www.baidu.com")
+            resp = get("https://www.baidu.com", verify=False)
             if resp.status_code == 200:
                 ts = resp.headers["date"]
-                time_array = time.strptime(ts[5:25], "%d %b %Y %H:%M:%S")
-                stamp = time.mktime(time_array) + 8 * 60 * 60
+                time_array = strptime(ts[5:25], "%d %b %Y %H:%M:%S")
+                stamp = mktime(time_array) + 8 * 60 * 60
                 return datetime.fromtimestamp(stamp).date()
         except Exception as e:
             retry -= 1
-            time.sleep(0.5)
+            sleep(0.5)
     else:
         return None
 
 
 def check_file_date(file_name) -> int:
-    stamp = os.path.getmtime(file_name)
+    stamp = os_path.getmtime(file_name)
     file_date = datetime.fromtimestamp(stamp).date()
     now_date = date.today()
     res = now_date - file_date
