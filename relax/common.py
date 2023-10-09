@@ -1,10 +1,10 @@
-import os
-import pandas as pd
+from os import path as os_path
+from pandas import read_excel
 
 
 def get_page_size_list() -> list:
-    df = pd.read_excel(
-        os.path.join("base_data", "size.xlsx"),
+    df = read_excel(
+        os_path.join("base_data", "size.xlsx"),
         usecols=["客户id", "筹措清单打印大小", "筹措清单份数", "备注"],
         dtype={"备注": str},
     )
@@ -30,8 +30,8 @@ def get_page_size_list() -> list:
 
 
 def get_ticket_size_list() -> list:
-    df = pd.read_excel(
-        os.path.join("base_data", "size.xlsx"),
+    df = read_excel(
+        os_path.join("base_data", "size.xlsx"),
         usecols=["客户id", "发票打印大小", "发票份数", "备注"],
         dtype={"备注": str},
     )

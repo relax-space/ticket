@@ -1,15 +1,15 @@
 """
 根据product文件夹内的文件，制作封面列表
 """
-import os
-import re
+from os import chdir, path as os_path, listdir
+from re import search
 from openpyxl import Workbook
-import pandas as pd
-import sys
+from pandas import read_csv, ExcelWriter
+from sys import path as sys_path
 
-from relax.util import get_companys, get_cover_1, get_cover_2, get_year_month
 
 try:
+    from relax.util import get_companys, get_cover_1, get_cover_2, get_year_month
     from relax.common import (
         stamp,
         get_page_size_list,
@@ -17,16 +17,17 @@ try:
         get_one_page_size,
     )
 except:
+    from util import get_companys, get_cover_1, get_cover_2, get_year_month
     from common import stamp, get_page_size_list, get_row_height, get_one_page_size
 
 
 def get_numb(raw: str):
-    v = re.search(r"\d+", raw)
+    v = search(r"\d+", raw)
     return v.group()
 
 
 def get_data(bill_no: str, xls_file_name: str) -> list[dict]:
-    df = pd.read_csv(xls_file_name, header=3)
+    df = read_csv(xls_file_name, header=3)
     fm_list = []
     date = ""
     for _, row in df.iterrows():
@@ -54,7 +55,7 @@ def write_cover(
     cover_content_2: str,
     company,
 ):
-    writer = pd.ExcelWriter(cover_file_name, engine="xlsxwriter")
+    writer = ExcelWriter(cover_file_name, engine="xlsxwriter")
     workbook1: Workbook = writer.book
     worksheet1 = workbook1.add_worksheet("Sheet1")
     worksheet1.center_horizontally()
@@ -185,9 +186,9 @@ def make_cover(
     company,
 ):
     bill_no = get_numb(xls_name)
-    xls_file_name = os.path.join(product_folder, xls_name)
+    xls_file_name = os_path.join(product_folder, xls_name)
     fm_list = get_data(bill_no, xls_file_name)
-    cover_file_name = os.path.join(cover_folder, f"{bill_no}.xlsx")
+    cover_file_name = os_path.join(cover_folder, f"{bill_no}.xlsx")
     write_cover(
         size_data,
         xls_name,
@@ -207,7 +208,7 @@ def make_cover_list(
     cover_content_2: str,
     company,
 ):
-    files = os.listdir(product_folder)
+    files = listdir(product_folder)
     size_data = get_page_size_list()
     for i in files:
         make_cover(
@@ -222,16 +223,16 @@ def make_cover_list(
 
 
 if __name__ == "__main__":
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
     print(p)
-    sys.path.insert(0, p)
-    os.chdir(p)
+    sys_path.insert(0, p)
+    chdir(p)
     from relax.util import get_settings
 
     settings = get_settings()
 
-    product_folder = os.path.join(settings["folder_name"], settings["prod_folder_name"])
-    cover_folder = os.path.join(settings["folder_name"], settings["cover_folder_name"])
+    product_folder = os_path.join(settings["folder_name"], settings["prod_folder_name"])
+    cover_folder = os_path.join(settings["folder_name"], settings["cover_folder_name"])
 
     year, month = get_year_month("2023-10-03")
     cover_content_1 = get_cover_1(year, month)

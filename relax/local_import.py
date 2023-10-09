@@ -1,21 +1,19 @@
 """
 制作开电子票的模板: 诺诺
 """
-import pandas as pd
-import os
-import sys
+from pandas import DataFrame, read_csv, isna, read_excel
+from os import path as os_path, listdir, chdir
+from sys import path as sys_path
 
 
 def make_import_one(
-    df_bases: pd.DataFrame,
+    df_bases: DataFrame,
     set1: set,
     prod_folder_name: str,
     import_folder_name: str,
     csvname: str,
 ):
-    df = pd.read_csv(
-        os.path.join(prod_folder_name, csvname), header=3, encoding="utf-8"
-    )
+    df = read_csv(os_path.join(prod_folder_name, csvname), header=3, encoding="utf-8")
     rows = []
     rows.append(
         [
@@ -46,7 +44,7 @@ def make_import_one(
     rows.append(columns)
     for i, row in df.iterrows():
         cond = row["序号"]
-        if pd.isna(cond):
+        if isna(cond):
             continue
         if not str.isdecimal(cond):
             continue
@@ -72,7 +70,7 @@ def make_import_one(
             new_row.append(df_base["免税"].fillna("").values[0])
         rows.append(new_row)
     xlsxname = csvname.replace("csv", "xlsx")
-    pd.DataFrame(
+    DataFrame(
         rows,
         columns=[
             """注意：
@@ -87,23 +85,23 @@ def make_import_one(
             "",
             "",
         ],
-    ).to_excel(os.path.join(import_folder_name, xlsxname), startrow=0, index=False)
+    ).to_excel(os_path.join(import_folder_name, xlsxname), startrow=0, index=False)
 
 
 def make_import_list(
     base_file_name: str, prod_folder_name: str, import_folder_name: str
 ) -> set:
     df_bases = get_all_base(base_file_name)
-    files = os.listdir(prod_folder_name)
+    files = listdir(prod_folder_name)
     set1 = set()
     for i in files:
         make_import_one(df_bases, set1, prod_folder_name, import_folder_name, i)
     return set1
 
 
-def get_all_base(base_file_name: str) -> pd.DataFrame:
-    df = pd.read_excel(
-        os.path.join("base_data", f"{base_file_name}.xlsx"),
+def get_all_base(base_file_name: str) -> DataFrame:
+    df = read_excel(
+        os_path.join("base_data", f"{base_file_name}.xlsx"),
         usecols=["商品名称", "计量单位", "税率", "免税", "税收编码"],
         dtype={"税收编码": str, "税率": str},
     )
@@ -111,17 +109,17 @@ def get_all_base(base_file_name: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, p)
-    os.chdir(p)
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
+    sys_path.insert(0, p)
+    chdir(p)
     from relax.util import get_settings
 
     settings = get_settings()
     base_file_name = settings["base_file_name"]
-    prod_folder_name = os.path.join(
+    prod_folder_name = os_path.join(
         settings["folder_name"], settings["prod_folder_name"]
     )
-    import_folder_name = os.path.join(
+    import_folder_name = os_path.join(
         settings["folder_name"], settings["import_folder_name"]
     )
     df_bases = get_all_base(base_file_name)

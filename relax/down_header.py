@@ -7,9 +7,13 @@ from aiohttp import ClientSession, TCPConnector
 from bs4 import BeautifulSoup
 
 from aiocsv import AsyncWriter
-import aiofiles
-from relax.util import get_header, get_settings
-import os
+from aiofiles import open
+from os import path as os_path
+
+try:
+    from relax.util import get_header, get_settings
+except:
+    from util import get_header, get_settings
 
 
 async def req(
@@ -24,9 +28,7 @@ async def req(
         url = url.format(i_param)
         async with sem:
             async with session.get(url, headers=headers) as resp:
-                async with aiofiles.open(
-                    file_name, "a", encoding="utf-8-sig", newline=""
-                ) as f:
+                async with open(file_name, "a", encoding="utf-8-sig", newline="") as f:
                     txt = await resp.read()
                     data = BeautifulSoup(txt, "html.parser")
                     table = data.find_all(
@@ -60,7 +62,7 @@ async def req_all_header(url: str, headers: dict, lst: list, file_name: str):
     async with ClientSession(
         connector=TCPConnector(limit=3, verify_ssl="base_data/icbc.pem")
     ) as session:
-        async with aiofiles.open(file_name, "w", encoding="utf-8-sig", newline="") as f:
+        async with open(file_name, "w", encoding="utf-8-sig", newline="") as f:
             await f.truncate()
             writer = AsyncWriter(f)
             await writer.writerow(
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     headers["Referer"] = "https://sp.trade.icbc.com.cn/submit/seller/toSubmitList.jhtml"
     url = "https://sp.trade.icbc.com.cn/submit/seller/toDetail.jhtml?submitSeq={}&submit.year=0&flag=print"
     settings = get_settings()
-    file_name = os.path.join(
+    file_name = os_path.join(
         settings["folder_name"], f'{settings["header_file_name"]}.csv'
     )
 

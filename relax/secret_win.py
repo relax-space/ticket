@@ -1,18 +1,18 @@
-import wmi
+from wmi import WMI
 from hashlib import md5
 from datetime import date, timedelta
-import os
-import sys
+from os import path as os_path, chdir
+from sys import path as sys_path
 
 try:
     from relax.util import str_to_int, fill_zero_2
 except:
-    pass
+    from util import str_to_int, fill_zero_2
 
 
 class SecretWin:
     def __init__(self):
-        self.w = wmi.WMI()
+        self.w = WMI()
         self.DAY = "WEBQMRBUFYYBFIXTDPUQWGPKAPQKNHGABDZBOWKGCEUIORLZNJZGLM"
         pass
 
@@ -77,10 +77,9 @@ class SecretWin:
 
 
 if __name__ == "__main__":
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, p)
-    os.chdir(p)
-    from relax.util import str_to_int, fill_zero_2
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
+    sys_path.insert(0, p)
+    chdir(p)
 
     sw = SecretWin()
     code = sw._get_code()

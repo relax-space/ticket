@@ -1,8 +1,7 @@
-import os
-import sys
-import pandas as pd
+from pandas import read_csv, ExcelWriter
+from os import path as os_path, listdir, chdir, makedirs
+from sys import path as sys_path
 
-from relax.util import get_companys
 
 try:
     from relax.common import (
@@ -11,13 +10,20 @@ try:
         get_row_height,
         get_one_page_size,
     )
+    from relax.util import get_companys
 except:
-    from common import stamp, get_page_size_list, get_row_height, get_one_page_size
+    from common import (
+        stamp,
+        get_page_size_list,
+        get_row_height,
+        get_one_page_size,
+    )
+    from util import get_companys
 
 
 def write_one(size_data, prod_folder, prod_xlsx_folder, company, xlsx_name):
-    writer = pd.ExcelWriter(
-        os.path.join(prod_xlsx_folder, f"{xlsx_name}.xlsx"), engine="xlsxwriter"
+    writer = ExcelWriter(
+        os_path.join(prod_xlsx_folder, f"{xlsx_name}.xlsx"), engine="xlsxwriter"
     )
     workbook1 = writer.book
     worksheet1 = workbook1.add_worksheet("Sheet1")
@@ -92,8 +98,8 @@ def write_one(size_data, prod_folder, prod_xlsx_folder, company, xlsx_name):
     worksheet1.set_column("G:G", 5.14 - adjust_width)
     worksheet1.set_column("H:H", 9.86 - adjust_width)
 
-    df = pd.read_csv(
-        os.path.join(prod_folder, f"{xlsx_name}.csv"),
+    df = read_csv(
+        os_path.join(prod_folder, f"{xlsx_name}.csv"),
         names=["A", "B", "C", "D", "E", "F", "G", "H"],
     )
     df = df.astype(str)
@@ -181,7 +187,7 @@ def write_one(size_data, prod_folder, prod_xlsx_folder, company, xlsx_name):
 
 
 def write_all(prod_folder, prod_xlsx_folder, company):
-    files = os.listdir(prod_folder)
+    files = listdir(prod_folder)
     size_data = get_page_size_list()
     for i in files:
         short_i = str.replace(i, ".csv", "")
@@ -191,20 +197,20 @@ def write_all(prod_folder, prod_xlsx_folder, company):
 pass
 
 if __name__ == "__main__":
-    p = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, p)
-    os.chdir(p)
+    p = os_path.dirname(os_path.dirname(os_path.abspath(__file__)))
+    sys_path.insert(0, p)
+    chdir(p)
     from relax.util import get_settings
 
     settings = get_settings()
-    prod_folder = os.path.join(settings["folder_name"], settings["prod_folder_name"])
-    prod_xlsx_folder = os.path.join(
+    prod_folder = os_path.join(settings["folder_name"], settings["prod_folder_name"])
+    prod_xlsx_folder = os_path.join(
         settings["folder_name"], settings["prod_xlsx_folder_name"]
     )
-    if not os.path.isdir(prod_folder):
-        os.makedirs(prod_folder)
-    if not os.path.isdir(prod_xlsx_folder):
-        os.makedirs(prod_xlsx_folder)
+    if not os_path.isdir(prod_folder):
+        makedirs(prod_folder)
+    if not os_path.isdir(prod_xlsx_folder):
+        makedirs(prod_xlsx_folder)
 
     company = get_companys()["0"]
     size_data = get_page_size_list()
